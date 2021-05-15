@@ -41,10 +41,10 @@ class SuiteCRMService:
             query_string += "{0}{1}".format(connectors[connector_index], fields)
             connector_index = 1
         
-        if filter != None and len(filter) > 0:
-            query_string += "{0}{1}".format(connectors[connector_index], fields)
+        if filter != None:
+            query_string += "{0}{1}".format(connectors[connector_index], filter.to_filter_string())
             connector_index = 1
-        print(query_string)
+        
         return query_string
 
     #Get all available modules
