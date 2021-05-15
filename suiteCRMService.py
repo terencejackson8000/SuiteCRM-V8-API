@@ -16,14 +16,36 @@ class SuiteCRMService:
     #----------
     #module : string
     #    The name of the module you want to get the data for. You can use the constants defined in constants.py
+    #fields : list
+    #   The fields to be returned. If None then all fields will be returned.
     #filter : array
     #    The filter you want ot set. Default is None
-    def get_data(self, module, filter=None):
+    def get_data(self, module, fields=None, filter=None):
         if module is None:
             raise TypeError("Parameter module cannot be None")
+
+        seperator = ","
         
-        response = requests.get("{0}/Api/V8/module/{1}".format(self._host, module), headers=self._headersAuth)
-        print(response.json())
+        if module != None and type(fields) == list and len(fields) > 0:
+            fields = "fields[{0}]={1}".format(module, seperator.join(fields))
+            
+        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module, self._build_query_params(fields, filter)), headers=self._headersAuth)
+        return response
+    
+    def _build_query_params(self, fields, filter):
+        connectors = ["?", "&"]
+        query_string = ""
+        connector_index = 0
+
+        if fields != None and len(fields) > 0:
+            query_string += "{0}{1}".format(connectors[connector_index], fields)
+            connector_index = 1
+        
+        if filter != None and len(filter) > 0:
+            query_string += "{0}{1}".format(connectors[connector_index], fields)
+            connector_index = 1
+        print(query_string)
+        return query_string
 
     #Get all available modules
     def get_modules(self):
