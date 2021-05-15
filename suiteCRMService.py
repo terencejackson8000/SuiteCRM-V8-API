@@ -1,3 +1,4 @@
+from module import Module
 import requests
 
 class SuiteCRMService:
@@ -23,13 +24,15 @@ class SuiteCRMService:
     def get_data(self, module, fields=None, filter=None):
         if module is None:
             raise TypeError("Parameter module cannot be None")
+        if not isinstance(module, Module):
+            raise TypeError("Parameter module must be of type enum Module")
 
         seperator = ","
         
         if module != None and type(fields) == list and len(fields) > 0:
-            fields = "fields[{0}]={1}".format(module, seperator.join(fields))
+            fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
             
-        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module, self._build_query_params(fields, filter)), headers=self._headersAuth)
+        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter)), headers=self._headersAuth)
         return response
     
     def _build_query_params(self, fields, filter):
