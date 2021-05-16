@@ -1,4 +1,4 @@
-from module import Module
+from .module import Module
 import requests
 
 class SuiteCRMService:
@@ -19,9 +19,11 @@ class SuiteCRMService:
     #    The name of the module you want to get the data for. You can use the constants defined in constants.py
     #fields : list
     #   The fields to be returned. If None then all fields will be returned.
-    #filter : array
+    #filter : Filter
     #    The filter you want ot set. Default is None
-    def get_data(self, module, fields=None, filter=None):
+    #pagination: Pagination
+    #   The pagination settings to be set. Default page size is 50
+    def get_data(self, module, fields=None, filter=None, pagination=None):
         if module is None:
             raise TypeError("Parameter module cannot be None")
         if not isinstance(module, Module):
@@ -31,6 +33,11 @@ class SuiteCRMService:
         
         if module != None and type(fields) == list and len(fields) > 0:
             fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
+        if pagination != None:
+            if pagination.page_number != None:
+                pages = "page[number]={0}&page[size]={1}".format(pagination.page_number, pagination.page_size)
+            else:
+                pages = "page[size]={0}".format(pagination.page_size)
             
         response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter)), headers=self._headersAuth)
         return response

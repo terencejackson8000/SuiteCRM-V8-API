@@ -2,13 +2,13 @@
 #Call this with python3 example.py <url> <client_id> <client_secret>
 import sys
 
-from module import Module
+from .module import Module
 
-from suiteCRMService import SuiteCRMService
-from filter import FilterTriplet
-from filter import Filter
-from filter import Comparison
-from filter import Logical
+from .suiteCRMService import SuiteCRMService
+from .filter import FilterTriplet
+from .filter import Filter
+from .filter import Comparison
+from .filter import Logical
 
 url = sys.argv[1]
 webService = SuiteCRMService(url, sys.argv[2], sys.argv[3])

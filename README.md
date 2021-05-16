@@ -8,3 +8,5 @@ Currently only client_credentials authorization is supported
 ```
 python3 example.py <url> <client_id> <client_secret>
 ```
+## Disclaimer
+This is my first Python project, so don't be too hard on me. Feedback is always welcome though.
