@@ -23,13 +23,15 @@ class SuiteCRMService:
     #    The filter you want ot set. Default is None
     #pagination: Pagination
     #   The pagination settings to be set. Default page size is 50
-    def get_data(self, module, fields=None, filter=None, pagination=None):
+    def get_data(self, module, fields=None, filter=None, pagination=None) -> requests.Response:
         if module is None:
             raise TypeError("Parameter module cannot be None")
         if not isinstance(module, Module):
             raise TypeError("Parameter module must be of type enum Module")
 
         seperator = ","
+
+        pages = None
         
         if module != None and type(fields) == list and len(fields) > 0:
             fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
@@ -39,10 +41,29 @@ class SuiteCRMService:
             else:
                 pages = "page[size]={0}".format(pagination.page_size)
             
-        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter)), headers=self._headersAuth)
+        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter, pages)), headers=self._headersAuth)
         return response
     
-    def _build_query_params(self, fields, filter):
+    def get_data_by_id(self, module, id, fields=None) -> requests.Response:
+        if module is None:
+            raise TypeError("Parameter module cannot be None")
+        if not isinstance(module, Module):
+            raise TypeError("Parameter module must be of type enum Module")
+        if id is None:
+            raise TypeError("Parameter id cannot be None")
+
+        seperator = ","
+
+        pages = None
+        
+        if module != None and type(fields) == list and len(fields) > 0:
+            fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
+            
+        response = requests.get("{0}/Api/V8/module/{1}/{2}{3}".format(self._host, module.value, id, self._build_query_params(fields, None, None)), headers=self._headersAuth)
+        return response
+        
+    
+    def _build_query_params(self, fields, filter, pages) -> str:
         connectors = ["?", "&"]
         query_string = ""
         connector_index = 0
@@ -55,8 +76,12 @@ class SuiteCRMService:
             query_string += "{0}{1}".format(connectors[connector_index], filter.to_filter_string())
             connector_index = 1
         
+        if pages != None:
+            query_string += "{0}{1}".format(connectors[connector_index], pages)
+            connector_index = 1
+
         return query_string
 
     #Get all available modules
-    def get_modules(self):
+    def get_modules(self) -> requests.Response:
         return requests.get("{0}/Api/V8/meta/modules".format(self._host), headers=self._headersAuth)
