@@ -39,12 +39,29 @@ class SuiteCRMService:
             return {'Authorization': 'Bearer {0}'.format(access_token)}
         else:
             raise RuntimeError("Not able to get token {0}".format(response.text))
+    
+    #Get all available modules
+    def get_modules(self) -> requests.Response:
+        return requests.get("{0}/Api/V8/meta/modules".format(self._host), headers=self._auth_header)
+
+    #Get fields for a certain module
+    #Parameters
+    #----------
+    #module : Module
+    #    The module you want to get the data for. 
+    def get_module_fields(self, module) -> requests.Response:
+        if module is None:
+            raise TypeError("Parameter module cannot be None")
+        if not isinstance(module, Module):
+            raise TypeError("Parameter module must be of type enum Module")
+
+        return requests.get("{0}/Api/V8/meta/fields/{1}".format(self._host, module.value), headers=self._auth_header)
 
     #get data for a certain module
     #Parameters
     #----------
-    #module : string
-    #    The name of the module you want to get the data for. You can use the constants defined in constants.py
+    #module : Module
+    #    The module you want to get the data for. 
     #fields : list
     #   The fields to be returned. If None then all fields will be returned.
     #filter : Filter
@@ -128,7 +145,3 @@ class SuiteCRMService:
             connector_index = 1
 
         return query_string
-
-    #Get all available modules
-    def get_modules(self) -> requests.Response:
-        return requests.get("{0}/Api/V8/meta/modules".format(self._host), headers=self._auth_header)
