@@ -1,16 +1,44 @@
-from .module import Module
+from module import Module
 import requests
 
+# SuiteCRM Web Service class to interact with the SuiteCRM v8 API
 class SuiteCRMService:
 
     #Constructor for the WebService. Gets the access token with the given clientId and clientSecret
+    #Parameters
+    #----------
+    #host : string
+    #    The host url of the service
+    #client_id : string
+    #    The client id for the authentication
+    #client_secret : string
+    #    The client secret for the authentication
     def __init__(self, host, client_id, client_secret):
+        if host == None or host == "":
+            raise TypeError("Parameter host must not be None")
+        if client_id == None or client_id == "":
+            raise TypeError("Parameter client_id must not be None")
+        if client_secret == None or client_secret == "":
+            raise TypeError("Parameter client_secret must not be None")
+
         self._host = host
+        self._auth_header = self._get_auth_header(client_id, client_secret)
+
+    #Get the authorization token and create and authentication header
+    #Parameters
+    #----------
+    #client_id : string
+    #    The client id for the authentication
+    #client_secret : string
+    #    The client secret for the authentication
+    def _get_auth_header(self, client_id, client_secret) -> dict:
         body = {"grant_type": "client_credentials","client_id": client_id,"client_secret": client_secret}
         response = requests.post("{0}/Api/access_token".format(self._host), data = body)
         if(response.status_code == 200):
             access_token = response.json().get("access_token")
-            self._headersAuth = {'Authorization': 'Bearer {0}'.format(access_token)}
+            return {'Authorization': 'Bearer {0}'.format(access_token)}
+        else:
+            raise RuntimeError("Not able to get token {0}".format(response.text))
 
     #get data for a certain module
     #Parameters
@@ -35,15 +63,19 @@ class SuiteCRMService:
         
         if module != None and type(fields) == list and len(fields) > 0:
             fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
-        if pagination != None:
-            if pagination.page_number != None:
-                pages = "page[number]={0}&page[size]={1}".format(pagination.page_number, pagination.page_size)
-            else:
-                pages = "page[size]={0}".format(pagination.page_size)
             
-        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter, pages)), headers=self._headersAuth)
+        response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter, pagination)), headers=self._auth_header)
         return response
     
+    #Get data by a given id
+    #Parameters
+    #----------
+    #module : string
+    #    The name of the module you want to get the data for. You can use the constants defined in constants.py
+    #id : string
+    #    The if of the data (object) to get
+    #fields : list
+    #   The fields to be returned. If None then all fields will be returned.
     def get_data_by_id(self, module, id, fields=None) -> requests.Response:
         if module is None:
             raise TypeError("Parameter module cannot be None")
@@ -59,11 +91,21 @@ class SuiteCRMService:
         if module != None and type(fields) == list and len(fields) > 0:
             fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
             
-        response = requests.get("{0}/Api/V8/module/{1}/{2}{3}".format(self._host, module.value, id, self._build_query_params(fields, None, None)), headers=self._headersAuth)
+        response = requests.get("{0}/Api/V8/module/{1}/{2}{3}".
+                    format(self._host, module.value, id, self._build_query_params(fields, None, None)), 
+                    headers=self._auth_header)
         return response
         
-    
-    def _build_query_params(self, fields, filter, pages) -> str:
+    #Build the query parameters to be appended to the API call
+    #Parameters
+    #----------
+    #fields : list
+    #   The fields to be returned. If None then all fields will be returned.
+    #filter : Filter
+    #    The filter you want ot set. Default is None
+    #pagination: Pagination
+    #   The pagination settings to be set. Default page size is 50
+    def _build_query_params(self, fields, filter, pagination) -> str:
         connectors = ["?", "&"]
         query_string = ""
         connector_index = 0
@@ -75,8 +117,13 @@ class SuiteCRMService:
         if filter != None:
             query_string += "{0}{1}".format(connectors[connector_index], filter.to_filter_string())
             connector_index = 1
-        
-        if pages != None:
+
+        if pagination != None:
+            if pagination.page_number != None:
+                pages = "page[number]={0}&page[size]={1}".format(pagination.page_number, pagination.page_size)
+            else:
+                pages = "page[size]={0}".format(pagination.page_size)
+            
             query_string += "{0}{1}".format(connectors[connector_index], pages)
             connector_index = 1
 
@@ -84,4 +131,4 @@ class SuiteCRMService:
 
     #Get all available modules
     def get_modules(self) -> requests.Response:
-        return requests.get("{0}/Api/V8/meta/modules".format(self._host), headers=self._headersAuth)
+        return requests.get("{0}/Api/V8/meta/modules".format(self._host), headers=self._auth_header)
