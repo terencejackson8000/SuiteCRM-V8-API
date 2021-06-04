@@ -1,5 +1,6 @@
-from module import Module
+from .module import Module
 import requests
+import json
 
 # SuiteCRM Web Service class to interact with the SuiteCRM v8 API
 class SuiteCRMService:
@@ -23,6 +24,7 @@ class SuiteCRMService:
 
         self._host = host
         self._auth_header = self._get_auth_header(client_id, client_secret)
+        self._auth_header['Content-type'] = 'application/vnd.api+json'
 
     #Get the authorization token and create and authentication header
     #Parameters
@@ -84,6 +86,31 @@ class SuiteCRMService:
         response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter, pagination)), headers=self._auth_header)
         return response
     
+    #Update a record
+    #Parameters
+    #----------
+    #module : Module
+    #    The module you want to get the data for. 
+    #id : string
+    #   The if of the object to be changed
+    #attributes : dict[str, object]
+    #    The attributes to be updated
+    def update_data(self, module, id, attributes):
+        if module is None:
+            raise TypeError("Parameter module cannot be None")
+        if not isinstance(module, Module):
+            raise TypeError("Parameter module must be of type enum Module")
+        if id is None or id == "":
+            raise TypeError("Parameter id cannot be None")
+        if attributes is None:
+            raise TypeError("Parameter attributes cannot be None")
+        if not isinstance(attributes, dict):
+            raise TypeError("Parameter attributes must be of type dict")
+        
+        body = {'data': { 'type': module.name.lower().capitalize(), 'id': id, 'attributes': attributes}}
+        json_data = json.dumps(body, default=lambda o: o.__dict__, sort_keys=False)
+        return requests.patch('{0}/Api/V8/module'.format(self._host), data = json_data, headers=self._auth_header)
+        
     #Get data by a given id
     #Parameters
     #----------
