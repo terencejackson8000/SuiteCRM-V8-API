@@ -7,6 +7,7 @@ Currently only client_credentials authorization is supported
 * Get data by id
 * Get modules
 * Get fields of a module
+* Update (patch) data
 ## How to run the example
 ```
 python3 example.py <url> <client_id> <client_secret>
