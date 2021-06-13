@@ -86,6 +86,27 @@ class SuiteCRMService:
         response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter, pagination)), headers=self._auth_header)
         return response
     
+    #Insert a record
+    #Parameters
+    #----------
+    #module : Module
+    #    The module you want to get the data for. 
+    #attributes : dict[str, object]
+    #    The attributes to be updated
+    def insert_data(self, module, attributes) -> requests.Response:
+        if module is None:
+            raise TypeError("Parameter module cannot be None")
+        if not isinstance(module, Module):
+            raise TypeError("Parameter module must be of type enum Module")
+        if attributes is None:
+            raise TypeError("Parameter attributes cannot be None")
+        if not isinstance(attributes, dict):
+            raise TypeError("Parameter attributes must be of type dict")
+        
+        body = {'data': { 'type': module.name.lower().capitalize(), 'attributes': attributes}}
+        json_data = json.dumps(body, default=lambda o: o.__dict__, sort_keys=False)
+        return requests.post('{0}/Api/V8/module'.format(self._host), data = json_data, headers=self._auth_header)
+    
     #Update a record
     #Parameters
     #----------
@@ -95,7 +116,7 @@ class SuiteCRMService:
     #   The if of the object to be changed
     #attributes : dict[str, object]
     #    The attributes to be updated
-    def update_data(self, module, id, attributes):
+    def update_data(self, module, id, attributes) -> requests.Response:
         if module is None:
             raise TypeError("Parameter module cannot be None")
         if not isinstance(module, Module):

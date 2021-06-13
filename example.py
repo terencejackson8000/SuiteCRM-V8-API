@@ -19,7 +19,7 @@ response = webService.get_modules()
 print ("Result of get modules call: {0}".format(response.json()))
 
 print("Get all fields of a module")
-response = webService.get_module_fields(Module.ACCOUNTS)
+response = webService.get_module_fields(Module.TASKS)
 print ("Result of get all fields of a module call: {0}".format(response.json()))
 
 print("Get data for opportunities")
@@ -30,3 +30,10 @@ filter = Filter(Logical.AND, [filterTriplet])
 
 response = webService.get_data(Module.OPPORTUNITIES, ["name", "probability"], filter)
 print ("Result of opportunities call: {0}".format(response.json()))
+
+attributes = {}
+attributes['name'] = 'Test Task'
+attributes['priority'] = 'High'
+
+response = webService.insert_data(Module.TASKS, attributes)
+print ("Result of insert data: {0}".format(response.text))
