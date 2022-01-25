@@ -33,4 +33,5 @@ class Module(enum.Enum):
     SPOTS = "Spots"
     SURVEYS = "Surveys"
     TASKS = "Tasks"
+    USER = "User"
     AOW_WORKFLOW = "AOW_WorkFlow"

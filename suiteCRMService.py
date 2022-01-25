@@ -1,4 +1,4 @@
-from module import Module
+from .module import Module
 import requests
 import json
 
@@ -77,13 +77,40 @@ class SuiteCRMService:
             raise TypeError("Parameter module must be of type enum Module")
 
         seperator = ","
-
-        pages = None
         
         if module != None and type(fields) == list and len(fields) > 0:
             fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
             
         response = requests.get("{0}/Api/V8/module/{1}{2}".format(self._host, module.value, self._build_query_params(fields, filter, pagination)), headers=self._auth_header)
+        return response
+    
+    #get relationship data for a certain module
+    #Parameters
+    #----------
+    #module : Module
+    #    The module you want to get the data for. 
+    #id: str
+    #   The ID of the object to get the relationship for
+    #relationship : Module
+    #    The relationship module to get the data for. (e.g. CONTACTS for contacts of an OPPORTUNITY)
+    #fields : list
+    #   The fields to be returned. If None then all fields will be returned.
+    #filter : Filter
+    #    The filter you want ot set. Default is None
+    #pagination: Pagination
+    #   The pagination settings to be set. Default page size is 50
+    def get_relationship_data(self, module, id, relationship, fields=None, filter=None, pagination=None) -> requests.Response:
+        if module is None:
+            raise TypeError("Parameter module cannot be None")
+        if not isinstance(module, Module):
+            raise TypeError("Parameter module must be of type enum Module")
+
+        seperator = ","
+        
+        if module != None and type(fields) == list and len(fields) > 0:
+            fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
+            
+        response = requests.get("{0}/Api/V8/module/{1}/{2}/relationships/{3}{4}".format(self._host, module.value, id, relationship.value.lower(), self._build_query_params(fields, filter, pagination)), headers=self._auth_header)
         return response
     
     #Insert a record
@@ -131,7 +158,7 @@ class SuiteCRMService:
         body = {'data': { 'type': module.name.lower().capitalize(), 'id': id, 'attributes': attributes}}
         json_data = json.dumps(body, default=lambda o: o.__dict__, sort_keys=False)
         return requests.patch('{0}/Api/V8/module'.format(self._host), data = json_data, headers=self._auth_header)
-        
+
     #Get data by a given id
     #Parameters
     #----------
@@ -150,8 +177,6 @@ class SuiteCRMService:
             raise TypeError("Parameter id cannot be None")
 
         seperator = ","
-
-        pages = None
         
         if module != None and type(fields) == list and len(fields) > 0:
             fields = "fields[{0}]={1}".format(module.value, seperator.join(fields))
@@ -160,7 +185,7 @@ class SuiteCRMService:
                     format(self._host, module.value, id, self._build_query_params(fields, None, None)), 
                     headers=self._auth_header)
         return response
-        
+    
     #Build the query parameters to be appended to the API call
     #Parameters
     #----------
