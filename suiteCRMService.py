@@ -5,6 +5,9 @@ import json
 # SuiteCRM Web Service class to interact with the SuiteCRM v8 API
 class SuiteCRMService:
 
+    PARAMETER_MUST_NOT_BE_NONE = "Parameter {0} must not be None"
+    PARAMETER_MUST_BE_OF_TYPE = "Parameter {0} must be of type {1}"
+    
     #Constructor for the WebService. Gets the access token with the given clientId and clientSecret
     #Parameters
     #----------
@@ -16,11 +19,12 @@ class SuiteCRMService:
     #    The client secret for the authentication
     def __init__(self, host, client_id, client_secret):
         if host == None or host == "":
-            raise TypeError("Parameter host must not be None")
+            
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("host"))
         if client_id == None or client_id == "":
-            raise TypeError("Parameter client_id must not be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("client_id"))
         if client_secret == None or client_secret == "":
-            raise TypeError("Parameter client_secret must not be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("client_secret"))
 
         self._host = host
         self._auth_header = self._get_auth_header(client_id, client_secret)
@@ -53,9 +57,9 @@ class SuiteCRMService:
     #    The module you want to get the data for. 
     def get_module_fields(self, module) -> requests.Response:
         if module is None:
-            raise TypeError("Parameter module cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("module"))
         if not isinstance(module, Module):
-            raise TypeError("Parameter module must be of type enum Module")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("module", "enum Module"))
 
         return requests.get("{0}/Api/V8/meta/fields/{1}".format(self._host, module.value), headers=self._auth_header)
 
@@ -72,9 +76,9 @@ class SuiteCRMService:
     #   The pagination settings to be set. Default page size is 50
     def get_data(self, module, fields=None, filter=None, pagination=None) -> requests.Response:
         if module is None:
-            raise TypeError("Parameter module cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("module"))
         if not isinstance(module, Module):
-            raise TypeError("Parameter module must be of type enum Module")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("module", "enum Module"))
 
         seperator = ","
         
@@ -101,9 +105,9 @@ class SuiteCRMService:
     #   The pagination settings to be set. Default page size is 50
     def get_relationship_data(self, module, id, relationship, fields=None, filter=None, pagination=None) -> requests.Response:
         if module is None:
-            raise TypeError("Parameter module cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("module"))
         if not isinstance(module, Module):
-            raise TypeError("Parameter module must be of type enum Module")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("module", "enum Module"))
 
         seperator = ","
         
@@ -122,13 +126,13 @@ class SuiteCRMService:
     #    The attributes to be updated
     def insert_data(self, module, attributes) -> requests.Response:
         if module is None:
-            raise TypeError("Parameter module cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("module"))
         if not isinstance(module, Module):
-            raise TypeError("Parameter module must be of type enum Module")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("module", "enum Module"))
         if attributes is None:
-            raise TypeError("Parameter attributes cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("attributes"))
         if not isinstance(attributes, dict):
-            raise TypeError("Parameter attributes must be of type dict")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("attributes", "dict"))
         
         body = {'data': { 'type': module.name.lower().capitalize(), 'attributes': attributes}}
         json_data = json.dumps(body, default=lambda o: o.__dict__, sort_keys=False)
@@ -145,16 +149,16 @@ class SuiteCRMService:
     #    The attributes to be updated
     def update_data(self, module, id, attributes) -> requests.Response:
         if module is None:
-            raise TypeError("Parameter module cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("module"))
         if not isinstance(module, Module):
-            raise TypeError("Parameter module must be of type enum Module")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("module", "enum Module"))
         if id is None or id == "":
-            raise TypeError("Parameter id cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("id"))
         if attributes is None:
-            raise TypeError("Parameter attributes cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("attributes"))
         if not isinstance(attributes, dict):
-            raise TypeError("Parameter attributes must be of type dict")
-        
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("attributes", "dict"))
+                    
         body = {'data': { 'type': module.name.lower().capitalize(), 'id': id, 'attributes': attributes}}
         json_data = json.dumps(body, default=lambda o: o.__dict__, sort_keys=False)
         return requests.patch('{0}/Api/V8/module'.format(self._host), data = json_data, headers=self._auth_header)
@@ -170,11 +174,11 @@ class SuiteCRMService:
     #   The fields to be returned. If None then all fields will be returned.
     def get_data_by_id(self, module, id, fields=None) -> requests.Response:
         if module is None:
-            raise TypeError("Parameter module cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("module"))
         if not isinstance(module, Module):
-            raise TypeError("Parameter module must be of type enum Module")
+            raise TypeError(self.PARAMETER_MUST_BE_OF_TYPE.format("module", "enum Module"))
         if id is None:
-            raise TypeError("Parameter id cannot be None")
+            raise TypeError(self.PARAMETER_MUST_NOT_BE_NONE.format("id"))
 
         seperator = ","
         
